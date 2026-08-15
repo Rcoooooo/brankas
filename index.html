@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -443,6 +444,10 @@ textarea{
         <button class="btn btn-primary" onclick="openItemModal()">
             ＋ Tambah Barang
         </button>
+
+        <button class="btn btn-gray" onclick="openSettings()">
+            ⚙ Pengaturan
+        </button>
     </div>
 </header>
 
@@ -698,6 +703,76 @@ Brankas Management System • Data tersimpan otomatis di browser
 
 <!-- MODAL SETTINGS -->
 
+<div class="modal" id="settingsModal">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h2>⚙ Pengaturan</h2>
+
+<button class="close" onclick="closeSettings()">×</button>
+
+</div>
+
+<div class="form-group">
+
+<label>Discord Webhook URL</label>
+
+<input
+    type="password"
+    id="webhook"
+    placeholder="https://discord.com/api/webhooks/1532706114184020058/QBK_ct9S01OF1wWb7vyqM-wWekDvLFLCw0J1RpZMZPtiwq303uuv8_6CsQ8G5yVX7HK-"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>Nama Bot Discord</label>
+
+<input
+    type="text"
+    id="botName"
+    placeholder="Brankas Management"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>Nama Brankas / Instansi</label>
+
+<input
+    type="text"
+    id="vaultName"
+    placeholder="Brankas Utama"
+>
+
+</div>
+
+<button
+    class="btn btn-primary"
+    style="width:100%;"
+    onclick="saveSettings()"
+>
+    Simpan Pengaturan
+</button>
+
+<br><br>
+
+<button
+    class="btn btn-red"
+    style="width:100%;"
+    onclick="resetAllData()"
+>
+    ⚠ Reset Semua Data
+</button>
+
+</div>
+
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -763,14 +838,15 @@ let history =
     JSON.parse(localStorage.getItem(STORAGE_HISTORY))
     || [];
 
-const DISCORD_WEBHOOK =
-    "https://discord.com/api/webhooks/1532706114184020058/QBK_ct9S01OF1wWb7vyqM-wWekDvLFLCw0J1RpZMZPtiwq303uuv8_6CsQ8G5yVX7HK-";
+let settings =
+    JSON.parse(localStorage.getItem(STORAGE_SETTINGS))
+    || {
 
-const DISCORD_BOT_NAME =
-    "Brankas Management";
+        webhook:"",
+        botName:"Brankas Management",
+        vaultName:"Brankas Utama"
 
-const BRANKAS_NAME =
-    "Brankas Utama";
+    };
 
 
 /* =========================================
@@ -1317,136 +1393,6 @@ async function processTransaction(type){
 ========================================= */
 
 async function sendDiscord(transaction){
-
-    if(
-        !DISCORD_WEBHOOK ||
-        DISCORD_WEBHOOK === "https://discord.com/api/webhooks/1532706114184020058/QBK_ct9S01OF1wWb7vyqM-wWekDvLFLCw0J1RpZMZPtiwq303uuv8_6CsQ8G5yVX7HK-"
-    ){
-        console.warn("Discord Webhook belum diatur.");
-        return;
-    }
-
-    const isDeposit =
-        transaction.type === "deposit";
-
-    const payload = {
-
-        username: DISCORD_BOT_NAME,
-
-        embeds: [{
-
-            title:
-                isDeposit
-                ? "📥 DEPOSIT BRANKAS"
-                : "📤 WITHDRAW BRANKAS",
-
-            color:
-                isDeposit
-                ? 5763719
-                : 15548997,
-
-            fields: [
-
-                {
-                    name: "👤 Pegawai",
-                    value:
-                        `**${transaction.employee}**`,
-                    inline: true
-                },
-
-                {
-                    name: "📦 Barang",
-                    value:
-                        `**${transaction.item}**`,
-                    inline: true
-                },
-
-                {
-                    name: "🔢 Jumlah",
-                    value:
-                        `**${formatNumber(transaction.quantity)}**`,
-                    inline: true
-                },
-
-                {
-                    name: "📊 Stok Sebelum",
-                    value:
-                        `${formatNumber(transaction.stockBefore)}`,
-                    inline: true
-                },
-
-                {
-                    name: "📊 Stok Sesudah",
-                    value:
-                        `${formatNumber(transaction.stockAfter)}`,
-                    inline: true
-                },
-
-                {
-                    name: "🏦 Brankas",
-                    value:
-                        BRANKAS_NAME,
-                    inline: true
-                },
-
-                {
-                    name: "📝 Keterangan",
-                    value:
-                        transaction.description || "-",
-                    inline: false
-                }
-
-            ],
-
-            footer: {
-                text:
-                    "Brankas Management System"
-            },
-
-            timestamp:
-                transaction.date
-
-        }]
-
-    };
-
-    try {
-
-        const response =
-            await fetch(
-                DISCORD_WEBHOOK,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(payload)
-                }
-            );
-
-        if(!response.ok){
-
-            console.error(
-                "Discord Webhook Error:",
-                response.status
-            );
-
-        }
-
-    } catch(error){
-
-        console.error(
-            "Gagal mengirim ke Discord:",
-            error
-        );
-
-    }
-
-}
 
     if(!settings.webhook){
 
